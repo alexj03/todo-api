@@ -5,6 +5,7 @@ import com.alexj03.todo.exception.TaskNotFoundException;
 import com.alexj03.todo.model.Todo;
 import com.alexj03.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,11 @@ public class TodoController {
     private final TodoService todoService;
 
     @GetMapping("/")
-    public List<Todo> getAllTodos() {
+    public List<Todo> getTodos(@RequestParam(required = false) String title) throws TaskNotFoundException {
+        if (title != null) {
+            return todoService.getByTitle(title);
+        }
+
         return todoService.getAll();
     }
 
@@ -27,17 +32,17 @@ public class TodoController {
     }
 
     @PostMapping("/")
-    public void createTodo(@RequestBody TodoDto todoDto) {
-        todoService.create(todoDto);
+    public Todo createTodo(@RequestBody TodoDto todoDto) {
+        return todoService.create(todoDto);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTodo(@PathVariable Long id) {
-        todoService.delete(id);
+    public List<Todo> deleteTodo(@PathVariable Long id) {
+        return todoService.delete(id);
     }
 
     @PutMapping("/")
-    public void updateTodo(@RequestBody Todo todo) {
-        todoService.update(todo);
+    public List<Todo> updateTodo(@RequestBody Todo todo) {
+        return todoService.update(todo);
     }
 }

@@ -30,7 +30,7 @@ public class TodoService {
                 .orElseThrow(() -> new TaskNotFoundException("Задача с идентификатором " + id + " не найдена!"));
     }
 
-    public void create(TodoDto todoDto) {
+    public Todo create(TodoDto todoDto) {
         log.info("Создание задачи с названием {}...", todoDto.getTitle());
         Todo todo = Todo.builder()
                 .createdAt(LocalDateTime.now())
@@ -42,19 +42,23 @@ public class TodoService {
                 .build();
 
         todoRepository.save(todo);
+        return todo;
     }
 
-    public void delete(Long id) {
+    public List<Todo> delete(Long id) {
         log.info("Удаление задачи под идентификатором {}...", id);
         todoRepository.deleteById(id);
+        return getAll();
     }
 
-    public void update(Todo todo) {
+    public List<Todo> update(Todo todo) {
         log.info("Изменение задачи под идентификатором {}...", todo.getId());
         todoRepository.save(todo);
+        return getAll();
     }
 
-    public Todo getByTitle(String title) throws TaskNotFoundException {
+    public List<Todo> getByTitle(String title) throws TaskNotFoundException {
+        log.info("Получение задачи по названию {}...", title);
         return todoRepository.findByTitle(title)
                 .orElseThrow(() -> new TaskNotFoundException("Задачи с заголовком " + title + " не существует!"));
     }
