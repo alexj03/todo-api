@@ -1,8 +1,8 @@
 package com.alexj03.todo.controller;
 
 import com.alexj03.todo.dto.TodoDto;
-import com.alexj03.todo.model.Todo;
 import com.alexj03.todo.exception.TaskNotFoundException;
+import com.alexj03.todo.model.Todo;
 import com.alexj03.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

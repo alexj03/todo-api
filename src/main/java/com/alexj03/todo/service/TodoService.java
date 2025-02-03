@@ -1,6 +1,7 @@
 package com.alexj03.todo.service;
 
 import com.alexj03.todo.dto.TodoDto;
+import com.alexj03.todo.model.Priority;
 import com.alexj03.todo.model.Todo;
 import com.alexj03.todo.exception.TaskNotFoundException;
 import com.alexj03.todo.repository.TodoRepository;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -31,8 +33,12 @@ public class TodoService {
     public void create(TodoDto todoDto) {
         log.info("Создание задачи с названием {}...", todoDto.getTitle());
         Todo todo = Todo.builder()
+                .createdAt(LocalDateTime.now())
                 .title(todoDto.getTitle())
                 .description(todoDto.getDescription())
+                .status(todoDto.getStatus())
+                .priority(todoDto.getPriority())
+                .deadline(todoDto.getDeadline())
                 .build();
 
         todoRepository.save(todo);
