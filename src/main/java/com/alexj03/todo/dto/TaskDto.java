@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
-public class TodoDto {
+public class TaskDto {
 
     private String title;
     private String description;
