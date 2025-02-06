@@ -46,4 +46,24 @@ public class TaskController {
     public ResponseEntity<Task> update(@PathVariable Long id, @RequestBody TaskDto taskDto) {
         return ResponseEntity.ok(taskService.update(id, taskDto));
     }
+
+    @GetMapping("/today")
+    public ResponseEntity<List<Task>> getTodayTasks() {
+        return ResponseEntity.ok(taskService.getTodayTasks());
+    }
+
+    @GetMapping("/tomorrow")
+    public ResponseEntity<List<Task>> getTomorrowTasks() {
+        return ResponseEntity.ok(taskService.getTomorrowTasks());
+    }
+
+    @GetMapping("/week")
+    public ResponseEntity<List<Task>> getWeekTasks() {
+        return ResponseEntity.ok(taskService.getWeekTasks());
+    }
+
+    @GetMapping("/important")
+    public ResponseEntity<List<Task>> getImportantTasks() {
+        return ResponseEntity.ok(taskService.getImportantTasks());
+    }
 }

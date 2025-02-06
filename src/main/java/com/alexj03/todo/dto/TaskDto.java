@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -17,5 +17,5 @@ public class TaskDto {
     private String description;
     private Status status;
     private Priority priority;
-    private LocalDateTime deadline;
+    private LocalDate deadline;
 }
