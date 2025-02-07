@@ -2,6 +2,7 @@ package com.alexj03.todo.service;
 
 import com.alexj03.todo.dto.TaskDto;
 import com.alexj03.todo.exception.TaskNotFoundException;
+import com.alexj03.todo.model.Category;
 import com.alexj03.todo.model.Priority;
 import com.alexj03.todo.model.Task;
 import com.alexj03.todo.repository.TaskRepository;
@@ -21,6 +22,7 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final CategoryService categoryService;
 
     public List<Task> getAll() {
         log.info("Получение списка задач...");
@@ -33,8 +35,11 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Задача с идентификатором " + id + " не найдена!"));
     }
 
-    public Task create(TaskDto taskDto) {
-        log.info("Создание задачи с названием {} и датой {}...", taskDto.getTitle(), taskDto.getDeadline());
+    public TaskDto create(TaskDto taskDto) {
+        log.info("Создание задачи с названием {} и категорией {}...", taskDto.getTitle(), taskDto.getCategoryId());
+
+        Category category = categoryService.getById(taskDto.getCategoryId());
+
         Task task = Task.builder()
                 .createdAt(LocalDateTime.now())
                 .title(taskDto.getTitle())
@@ -45,8 +50,10 @@ public class TaskService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        task.setCategory(category);
+
         taskRepository.save(task);
-        return task;
+        return taskDto;
     }
 
     public void delete(Long id) {

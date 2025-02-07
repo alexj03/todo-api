@@ -32,7 +32,7 @@ public class TaskController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Task> create(@RequestBody TaskDto taskDto) {
+    public ResponseEntity<TaskDto> create(@RequestBody TaskDto taskDto) {
         return ResponseEntity.ok(taskService.create(taskDto));
     }
 

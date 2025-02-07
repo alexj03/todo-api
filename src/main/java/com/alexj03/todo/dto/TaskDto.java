@@ -18,4 +18,5 @@ public class TaskDto {
     private Status status;
     private Priority priority;
     private LocalDate deadline;
+    private Long categoryId;
 }
