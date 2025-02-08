@@ -4,11 +4,13 @@ import com.alexj03.todo.dto.CategoryDto;
 import com.alexj03.todo.model.Category;
 import com.alexj03.todo.service.CategoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/category")
@@ -37,8 +39,8 @@ public class CategoryController {
         return ResponseEntity.ok("Категория удалена");
     }
 
-    @PutMapping("/")
-    public ResponseEntity<Category> update(@RequestBody CategoryDto categoryDto) {
-        return ResponseEntity.ok(categoryService.update(categoryDto));
+    @PutMapping("/{id}")
+    public ResponseEntity<Category> rename(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
+        return ResponseEntity.ok(categoryService.rename(id, categoryDto));
     }
 }

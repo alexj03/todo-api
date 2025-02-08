@@ -35,8 +35,9 @@ public class CategoryService {
         categoryRepository.deleteById(id);
     }
 
-    public Category update(CategoryDto categoryDto) {
-        Category category = categoryRepository.findAllByTitle(categoryDto.getTitle()).orElseThrow(() -> new IllegalArgumentException("Неверные данные"));
+    public Category rename(Long id, CategoryDto categoryDto) {
+        Category category = getById(id);
+        category.setTitle(categoryDto.getTitle());
         return categoryRepository.save(category);
     }
 }
