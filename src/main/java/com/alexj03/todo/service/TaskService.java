@@ -11,6 +11,7 @@ import com.alexj03.todo.repository.TaskRepository;
 import com.alexj03.todo.specification.TaskSpecifications;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -107,15 +108,18 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    public List<Task> findFilteredTasks(String title, Status status, Priority priority, LocalDate deadline, Category category) {
+    public List<Task> findFilteredTasks(String title, Status status, Priority priority, LocalDate deadline, Category category, String sortBy, String sortDir) {
         log.info("Find tasks by title, status, priority, deadline, category: {}, {}, {}, {}, {}", title, status, priority, deadline, category);
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+
         Specification<Task> specification = Specification.where(TaskSpecifications.hasTitle(title))
                 .and(TaskSpecifications.hasStatus(status))
                 .and(TaskSpecifications.hasPriority(priority))
                 .and(TaskSpecifications.hasDeadline(deadline))
                 .and(TaskSpecifications.hasCategory(category));
 
-        return taskRepository.findAll(specification);
+        return taskRepository.findAll(specification, sort);
     }
 }
 

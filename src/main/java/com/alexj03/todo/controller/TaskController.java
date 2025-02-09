@@ -31,9 +31,11 @@ public class TaskController {
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) Priority priority,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
-            @RequestParam(required = false) Category category
+            @RequestParam(required = false) Category category,
+            @RequestParam(defaultValue = "deadline") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
     ) {
-        return ResponseEntity.ok(taskService.findFilteredTasks(title, status, priority, deadline, category));
+        return ResponseEntity.ok(taskService.findFilteredTasks(title, status, priority, deadline, category, sortBy, sortDir));
     }
 
     @GetMapping("/{id}")
