@@ -4,15 +4,11 @@ import com.alexj03.todo.model.Priority;
 import com.alexj03.todo.model.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
-@ToString
+@Data
 public class TaskDto {
 
     @Schema(description = "Task title", example = "Buy Groceries for the Week")

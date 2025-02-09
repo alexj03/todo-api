@@ -3,11 +3,9 @@ package com.alexj03.todo.service;
 import com.alexj03.todo.dto.TaskDto;
 import com.alexj03.todo.exception.TaskNotFoundException;
 import com.alexj03.todo.exception.TasksNotFoundException;
-import com.alexj03.todo.model.Category;
-import com.alexj03.todo.model.Priority;
-import com.alexj03.todo.model.Status;
-import com.alexj03.todo.model.Task;
+import com.alexj03.todo.model.*;
 import com.alexj03.todo.repository.TaskRepository;
+import com.alexj03.todo.repository.UserRepository;
 import com.alexj03.todo.specification.TaskSpecifications;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +26,8 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final CategoryService categoryService;
+    private final UserRepository userRepository;
+    private final UserService userService;
 
     public List<Task> findAll() {
         log.info("Find all tasks");
@@ -81,6 +81,7 @@ public class TaskService {
                 .status(taskDto.getStatus())
                 .priority(taskDto.getPriority())
                 .deadline(taskDto.getDeadline() != null ? taskDto.getDeadline().plusDays(1) : null)
+                .user(userService.getCurrentUser())
                 .build();
 
         taskRepository.save(task);
@@ -113,7 +114,8 @@ public class TaskService {
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
 
-        Specification<Task> specification = Specification.where(TaskSpecifications.hasTitle(title))
+        Specification<Task> specification = Specification.where(TaskSpecifications.hasUser(userService.getCurrentUser()))
+                .and(TaskSpecifications.hasTitle(title))
                 .and(TaskSpecifications.hasStatus(status))
                 .and(TaskSpecifications.hasPriority(priority))
                 .and(TaskSpecifications.hasDeadline(deadline))

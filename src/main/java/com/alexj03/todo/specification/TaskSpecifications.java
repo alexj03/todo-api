@@ -1,9 +1,6 @@
 package com.alexj03.todo.specification;
 
-import com.alexj03.todo.model.Category;
-import com.alexj03.todo.model.Priority;
-import com.alexj03.todo.model.Status;
-import com.alexj03.todo.model.Task;
+import com.alexj03.todo.model.*;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
@@ -18,6 +15,11 @@ public class TaskSpecifications {
     public static Specification<Task> hasStatus(Status status) {
         return (root, query, builder) -> status == null ? null :
                 builder.equal(root.get("status"), status);
+    }
+
+    public static Specification<Task> hasUser(User user) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("user"), user);
     }
 
     public static Specification<Task> hasPriority(Priority priority) {
