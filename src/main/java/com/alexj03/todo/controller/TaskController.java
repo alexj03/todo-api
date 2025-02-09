@@ -1,9 +1,10 @@
 package com.alexj03.todo.controller;
 
 import com.alexj03.todo.dto.TaskDto;
-import com.alexj03.todo.exception.TaskNotFoundException;
 import com.alexj03.todo.model.Task;
 import com.alexj03.todo.service.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,58 +13,67 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/todo")
+@RequestMapping("/api/tasks")
+@Tag(name = "Task Controller", description = "Task Management Controller")
 public class TaskController {
 
     private final TaskService taskService;
 
-    @GetMapping("/")
-    public ResponseEntity<List<Task>> getAll(@RequestParam(required = false) String title) throws TaskNotFoundException {
+    @GetMapping
+    @Operation(summary = "Finds all tasks", description = "Finds all tasks and returns all tasks")
+    public ResponseEntity<List<Task>> findAll(@RequestParam(required = false) String title) {
         if (title != null) {
-            return ResponseEntity.ok(taskService.getByTitle(title));
+            return ResponseEntity.ok(taskService.findByTitle(title));
         }
 
-        return ResponseEntity.ok(taskService.getAll());
+        return ResponseEntity.ok(taskService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getById(@PathVariable Long id) throws TaskNotFoundException {
-        return ResponseEntity.ok(taskService.getById(id));
+    @Operation(summary = "Finds a task by id", description = "Finds a task by id and returns the data of a single task by its ID")
+    public ResponseEntity<Task> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(taskService.findById(id));
     }
 
-    @PostMapping("/")
-    public ResponseEntity<TaskDto> create(@RequestBody TaskDto taskDto) {
+    @GetMapping("/today")
+    @Operation(summary = "Finds today tasks", description = "Finds today tasks and returns tasks with deadline = today")
+    public ResponseEntity<List<Task>> findTodayTasks() {
+        return ResponseEntity.ok(taskService.findTodayTasks());
+    }
+
+    @GetMapping("/tomorrow")
+    @Operation(summary = "Finds tomorrow tasks", description = "Finds tomorrow tasks and returns tasks with deadline = tomorrow")
+    public ResponseEntity<List<Task>> findTomorrowTasks() {
+        return ResponseEntity.ok(taskService.findTomorrowTasks());
+    }
+
+    @GetMapping("/week")
+    @Operation(summary = "Finds weekly tasks", description = "Finds weekly tasks and returns tasks with deadline = current week (starting from monday)")
+    public ResponseEntity<List<Task>> findWeekTasks() {
+        return ResponseEntity.ok(taskService.findWeekTasks());
+    }
+
+    @GetMapping("/important")
+    @Operation(summary = "Finds important tasks", description = "Finds important tasks and returns tasks with priority = HIGH")
+    public ResponseEntity<List<Task>> findImportantTasks() {
+        return ResponseEntity.ok(taskService.findImportantTasks());
+    }
+
+    @PostMapping
+    @Operation(summary = "Creates a task", description = "Creates a task and returns the created task")
+    public ResponseEntity<Task> create(@RequestBody TaskDto taskDto) {
         return ResponseEntity.ok(taskService.create(taskDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @Operation(summary = "Deletes a task", description = "Deletes the task and returns nothing")
+    public void delete(@PathVariable Long id) {
         taskService.delete(id);
-        return ResponseEntity.ok("Задача удалена");
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Updates a task", description = "Updates the task and returns the updated task")
     public ResponseEntity<Task> update(@PathVariable Long id, @RequestBody TaskDto taskDto) {
         return ResponseEntity.ok(taskService.update(id, taskDto));
-    }
-
-    @GetMapping("/today")
-    public ResponseEntity<List<Task>> getTodayTasks() {
-        return ResponseEntity.ok(taskService.getTodayTasks());
-    }
-
-    @GetMapping("/tomorrow")
-    public ResponseEntity<List<Task>> getTomorrowTasks() {
-        return ResponseEntity.ok(taskService.getTomorrowTasks());
-    }
-
-    @GetMapping("/week")
-    public ResponseEntity<List<Task>> getWeekTasks() {
-        return ResponseEntity.ok(taskService.getWeekTasks());
-    }
-
-    @GetMapping("/important")
-    public ResponseEntity<List<Task>> getImportantTasks() {
-        return ResponseEntity.ok(taskService.getImportantTasks());
     }
 }

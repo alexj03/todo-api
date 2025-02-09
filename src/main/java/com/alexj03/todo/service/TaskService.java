@@ -2,6 +2,7 @@ package com.alexj03.todo.service;
 
 import com.alexj03.todo.dto.TaskDto;
 import com.alexj03.todo.exception.TaskNotFoundException;
+import com.alexj03.todo.exception.TasksNotFoundException;
 import com.alexj03.todo.model.Category;
 import com.alexj03.todo.model.Priority;
 import com.alexj03.todo.model.Task;
@@ -24,21 +25,52 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final CategoryService categoryService;
 
-    public List<Task> getAll() {
-        log.info("Получение списка задач...");
+    public List<Task> findAll() {
+        log.info("Получить все задачи");
         return taskRepository.findAll();
     }
 
-    public Task getById(Long id) throws TaskNotFoundException {
-        log.info("Получение задачи под идентификатором {}...", id);
+    public Task findById(Long id) {
+        log.info("Получить задачу с id {}", id);
         return taskRepository.findById(id)
-                .orElseThrow(() -> new TaskNotFoundException("Задача с идентификатором " + id + " не найдена!"));
+                .orElseThrow(() -> new TaskNotFoundException(id));
     }
 
-    public TaskDto create(TaskDto taskDto) {
-        log.info("Создание задачи с названием {} и категорией {}...", taskDto.getTitle(), taskDto.getCategoryId());
+    public List<Task> findByTitle(String title) {
+        log.info("Получить задачу по названию {}", title);
+        return taskRepository.findByTitle(title)
+                .orElseThrow(() -> new TaskNotFoundException(title));
+    }
 
-        Category category = categoryService.getById(taskDto.getCategoryId());
+    public List<Task> findTodayTasks() {
+        log.info("Получить задачи на сегодня");
+        return taskRepository.findAllByDeadline(LocalDate.now()).orElseThrow(() -> new TasksNotFoundException("На сегодня задач нет"));
+    }
+
+    public List<Task> findTomorrowTasks() {
+        log.info("Получить задачи на завтра");
+        return taskRepository.findAllByDeadline(LocalDate.now().plusDays(1)).orElseThrow(() -> new TasksNotFoundException("На завтра задач нет"));
+    }
+
+    public List<Task> findWeekTasks() {
+        log.info("Получить задачи на текущую неделю");
+
+        LocalDate today = LocalDate.now();
+        LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate sunday = monday.plusDays(6);
+
+        return taskRepository.findAllByDeadlineBetween(monday, sunday).orElseThrow(() -> new TasksNotFoundException("На неделю задач нет"));
+    }
+
+    public List<Task> findImportantTasks() {
+        log.info("Получить список задач с высоким приоритетом");
+        return taskRepository.findAllByPriorityEquals(Priority.HIGH).orElseThrow(() -> new TasksNotFoundException("Задач с высоким приоритетом нет"));
+    }
+
+    public Task create(TaskDto taskDto) {
+        log.info("Создать задачу с названием {}", taskDto.getTitle());
+
+        Category category = categoryService.findById(taskDto.getCategoryId());
 
         Task task = Task.builder()
                 .createdAt(LocalDateTime.now())
@@ -53,16 +85,12 @@ public class TaskService {
         task.setCategory(category);
 
         taskRepository.save(task);
-        return taskDto;
-    }
-
-    public void delete(Long id) {
-        log.info("Удаление задачи под идентификатором {}...", id);
-        taskRepository.deleteById(id);
+        return task;
     }
 
     public Task update(Long id, TaskDto taskDto) {
-        log.info("Изменение задачи под идентификатором {}...", id);
+        log.info("Изменить задачу с id {}", id);
+
         Task task = Task.builder()
                 .id(id)
                 .title(taskDto.getTitle())
@@ -71,38 +99,13 @@ public class TaskService {
                 .deadline(taskDto.getDeadline())
                 .status(taskDto.getStatus())
                 .build();
+
         taskRepository.save(task);
         return task;
     }
 
-    public List<Task> getByTitle(String title) throws TaskNotFoundException {
-        log.info("Получение задачи по названию {}...", title);
-        return taskRepository.findByTitle(title)
-                .orElseThrow(() -> new TaskNotFoundException("Задачи с заголовком " + title + " не существует!"));
-    }
-
-    public List<Task> getTodayTasks() {
-        log.info("Получение задач со сроком на сегодня...");
-        return taskRepository.findAllByDeadline(LocalDate.now()).orElseThrow(() -> new IllegalArgumentException("Данные не верны"));
-    }
-
-    public List<Task> getTomorrowTasks() {
-        log.info("Получение задач со сроком на завтра...");
-        return taskRepository.findAllByDeadline(LocalDate.now().plusDays(1)).orElseThrow(() -> new IllegalArgumentException("Данные не верны"));
-    }
-
-    public List<Task> getWeekTasks() {
-        log.info("Получение на текущую неделю...");
-
-        LocalDate today = LocalDate.now();
-        LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate sunday = monday.plusDays(6);
-
-        return taskRepository.findAllByDeadlineBetween(monday, sunday).orElseThrow(() -> new IllegalArgumentException("Данные не верны"));
-    }
-
-    public List<Task> getImportantTasks() {
-        log.info("Получение важных задач...");
-        return taskRepository.findAllByPriorityEquals(Priority.HIGH).orElseThrow(() -> new IllegalArgumentException("Данные не верны"));
+    public void delete(Long id) {
+        log.info("Удалить задачу с id {}", id);
+        taskRepository.deleteById(id);
     }
 }
