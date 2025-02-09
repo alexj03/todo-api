@@ -5,10 +5,13 @@ import com.alexj03.todo.exception.TaskNotFoundException;
 import com.alexj03.todo.exception.TasksNotFoundException;
 import com.alexj03.todo.model.Category;
 import com.alexj03.todo.model.Priority;
+import com.alexj03.todo.model.Status;
 import com.alexj03.todo.model.Task;
 import com.alexj03.todo.repository.TaskRepository;
+import com.alexj03.todo.specification.TaskSpecifications;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -70,8 +73,6 @@ public class TaskService {
     public Task create(TaskDto taskDto) {
         log.info("Create task with title: {}", taskDto.getTitle());
 
-        Category category = categoryService.findById(taskDto.getCategoryId());
-
         Task task = Task.builder()
                 .createdAt(LocalDateTime.now())
                 .title(taskDto.getTitle())
@@ -79,10 +80,7 @@ public class TaskService {
                 .status(taskDto.getStatus())
                 .priority(taskDto.getPriority())
                 .deadline(taskDto.getDeadline() != null ? taskDto.getDeadline().plusDays(1) : null)
-                .createdAt(LocalDateTime.now())
                 .build();
-
-        task.setCategory(category);
 
         taskRepository.save(task);
         return task;
@@ -108,4 +106,36 @@ public class TaskService {
         log.info("Delete task with id {}", id);
         taskRepository.deleteById(id);
     }
+
+    public List<Task> findFilteredTasks(String title, Status status, Priority priority, LocalDate deadline, Category category) {
+        log.info("Find tasks by title, status, priority, deadline, category: {}, {}, {}, {}, {}", title, status, priority, deadline, category);
+        Specification<Task> specification = Specification.where(TaskSpecifications.hasTitle(title))
+                .and(TaskSpecifications.hasStatus(status))
+                .and(TaskSpecifications.hasPriority(priority))
+                .and(TaskSpecifications.hasDeadline(deadline))
+                .and(TaskSpecifications.hasCategory(category));
+
+        return taskRepository.findAll(specification);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

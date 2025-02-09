@@ -1,14 +1,19 @@
 package com.alexj03.todo.controller;
 
 import com.alexj03.todo.dto.TaskDto;
+import com.alexj03.todo.model.Category;
+import com.alexj03.todo.model.Priority;
+import com.alexj03.todo.model.Status;
 import com.alexj03.todo.model.Task;
 import com.alexj03.todo.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -21,12 +26,14 @@ public class TaskController {
 
     @GetMapping
     @Operation(summary = "Finds all tasks", description = "Finds all tasks and returns all tasks")
-    public ResponseEntity<List<Task>> findAll(@RequestParam(required = false) String title) {
-        if (title != null) {
-            return ResponseEntity.ok(taskService.findByTitle(title));
-        }
-
-        return ResponseEntity.ok(taskService.findAll());
+    public ResponseEntity<List<Task>> findAll(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Priority priority,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
+            @RequestParam(required = false) Category category
+    ) {
+        return ResponseEntity.ok(taskService.findFilteredTasks(title, status, priority, deadline, category));
     }
 
     @GetMapping("/{id}")
