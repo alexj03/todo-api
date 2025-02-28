@@ -46,6 +46,10 @@ public class User implements UserDetails {
     @JsonIgnore
     private List<Task> tasks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    private List<Category> categories = new ArrayList<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

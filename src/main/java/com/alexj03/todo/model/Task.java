@@ -9,9 +9,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Formula;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @Entity
@@ -44,7 +46,7 @@ public class Task {
     @Column(name = "priority")
     @Enumerated(EnumType.STRING)
     @Schema(description = "Task priority", example = "HIGH")
-    private Priority priority;
+    private Priority priority = Priority.NONE;
 
     @Column(name = "created_at")
     @Schema(description = "Task creation date", example = "2025-02-06 13:30:45.963820")
@@ -52,7 +54,10 @@ public class Task {
 
     @Column(name = "deadline")
     @Schema(description = "Task deadline", example = "2025-02-12")
-    private LocalDate deadline;
+    private ZonedDateTime deadline;
+
+    @Formula("(CASE priority WHEN 'HIGH' THEN 1 WHEN 'MIDDLE' THEN 2 WHEN 'LOW' THEN 3 WHEN 'NONE' THEN 4 END)")
+    private Integer priorityOrder = 4;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")

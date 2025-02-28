@@ -1,5 +1,6 @@
 package com.alexj03.todo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -35,4 +36,9 @@ public class Category {
     @JsonManagedReference
     @Schema(description = "Category's tasks", example = "Buy Groceries for the Week")
     private List<Task> tasks = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
 }

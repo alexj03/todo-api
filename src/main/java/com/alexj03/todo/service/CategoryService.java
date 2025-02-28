@@ -1,8 +1,10 @@
 package com.alexj03.todo.service;
 
 import com.alexj03.todo.dto.CategoryDto;
+import com.alexj03.todo.dto.TaskDto;
 import com.alexj03.todo.exception.CategoryNotFoundException;
 import com.alexj03.todo.model.Category;
+import com.alexj03.todo.model.Task;
 import com.alexj03.todo.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,10 +18,11 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final UserService userService;
 
     public List<Category> findAll() {
         log.info("Find all categories");
-        return categoryRepository.findAll();
+        return categoryRepository.findAllByUser(userService.getCurrentUser()).orElseThrow(() -> new RuntimeException("Ошибка запроса категорий"));
     }
 
     public Category findById(Long id) {
@@ -29,7 +32,9 @@ public class CategoryService {
 
     public Category create(CategoryDto categoryDto) {
         log.info("Create category with title: {}", categoryDto.getTitle());
-        Category category = Category.builder().title(categoryDto.getTitle()).build();
+        Category category = Category.builder().title(categoryDto.getTitle())
+                .user(userService.getCurrentUser())
+                .build();
         return categoryRepository.save(category);
     }
 

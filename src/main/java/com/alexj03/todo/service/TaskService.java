@@ -46,33 +46,101 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException(title));
     }
 
-    public List<Task> findTodayTasks() {
+    public List<TaskDto> findTodayTasks(String title, Status status, Priority priority, Category category, String sortBy, String sortDir) {
         log.info("Find today tasks");
-        return taskRepository.findAllByDeadline(LocalDate.now()).orElseThrow(TasksNotFoundException::new);
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+
+        Specification<Task> specification = Specification.where(TaskSpecifications.hasUser(userService.getCurrentUser()))
+                .and(TaskSpecifications.hasTitle(title))
+                .and(TaskSpecifications.hasStatus(status))
+                .and(TaskSpecifications.hasPriority(priority))
+                .and(TaskSpecifications.hasDeadline(LocalDate.now()))
+                .and(TaskSpecifications.hasCategory(category));
+
+        if ("priority".equalsIgnoreCase(sortBy)) {
+            sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy.equals("priority") ? "priorityOrder" : sortBy);
+        }
+
+        List<Task> tasks = taskRepository.findAll(specification, sort);
+
+        return tasks.stream().map(this::toDto).toList();
     }
 
-    public List<Task> findTomorrowTasks() {
+    public List<TaskDto> findTomorrowTasks(String title, Status status, Priority priority, Category category, String sortBy, String sortDir) {
         log.info("Find tomorrow tasks");
-        return taskRepository.findAllByDeadline(LocalDate.now().plusDays(1)).orElseThrow(TasksNotFoundException::new);
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+
+        Specification<Task> specification = Specification.where(TaskSpecifications.hasUser(userService.getCurrentUser()))
+                .and(TaskSpecifications.hasTitle(title))
+                .and(TaskSpecifications.hasStatus(status))
+                .and(TaskSpecifications.hasPriority(priority))
+                .and(TaskSpecifications.hasDeadline(LocalDate.now().plusDays(1)))
+                .and(TaskSpecifications.hasCategory(category));
+
+        if ("priority".equalsIgnoreCase(sortBy)) {
+            sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy.equals("priority") ? "priorityOrder" : sortBy);
+        }
+
+        List<Task> tasks = taskRepository.findAll(specification, sort);
+
+        return tasks.stream().map(this::toDto).toList();
     }
 
-    public List<Task> findWeekTasks() {
+    public List<TaskDto> findWeekTasks(String title, Status status, Priority priority, Category category, String sortBy, String sortDir) {
         log.info("Find week tasks");
 
         LocalDate today = LocalDate.now();
         LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate sunday = monday.plusDays(6);
 
-        return taskRepository.findAllByDeadlineBetween(monday, sunday).orElseThrow(TasksNotFoundException::new);
+//        return taskRepository.findAllByDeadlineBetween(monday, sunday).orElseThrow(TasksNotFoundException::new);
+
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+
+        Specification<Task> specification = Specification.where(TaskSpecifications.hasUser(userService.getCurrentUser()))
+                .and(TaskSpecifications.hasTitle(title))
+                .and(TaskSpecifications.hasStatus(status))
+                .and(TaskSpecifications.hasPriority(priority))
+                .and(TaskSpecifications.hasDeadlineBetween(monday, sunday))
+                .and(TaskSpecifications.hasCategory(category));
+
+        if ("priority".equalsIgnoreCase(sortBy)) {
+            sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy.equals("priority") ? "priorityOrder" : sortBy);
+        }
+
+        List<Task> tasks = taskRepository.findAll(specification, sort);
+
+        return tasks.stream().map(this::toDto).toList();
     }
 
-    public List<Task> findImportantTasks() {
+    public List<TaskDto> findImportantTasks(String title, Status status, Priority priority, Category category, String sortBy, String sortDir) {
         log.info("Find important tasks");
-        return taskRepository.findAllByPriorityEquals(Priority.HIGH).orElseThrow(TasksNotFoundException::new);
+//        List<Task> tasks = taskRepository.findAllByUserAndPriorityEquals(userService.getCurrentUser(), Priority.HIGH).orElseThrow(TasksNotFoundException::new);
+//        return tasks.stream().map(this::toDto).toList();
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+
+        Specification<Task> specification = Specification.where(TaskSpecifications.hasUser(userService.getCurrentUser()))
+                .and(TaskSpecifications.hasTitle(title))
+                .and(TaskSpecifications.hasStatus(status))
+                .and(TaskSpecifications.hasPriority(Priority.HIGH))
+                .and(TaskSpecifications.hasCategory(category));
+
+        if ("priority".equalsIgnoreCase(sortBy)) {
+            sort = Sort.by(Sort.Direction.fromString(sortDir), "priority");
+        }
+
+        List<Task> tasks = taskRepository.findAll(specification, sort);
+
+        return tasks.stream().map(this::toDto).toList();
     }
 
-    public Task create(TaskDto taskDto) {
+    public TaskDto create(TaskDto taskDto) {
         log.info("Create task with title: {}", taskDto.getTitle());
+
 
         Task task = Task.builder()
                 .createdAt(LocalDateTime.now())
@@ -84,12 +152,18 @@ public class TaskService {
                 .user(userService.getCurrentUser())
                 .build();
 
+        if (taskDto.getCategoryId() != null) {
+            task.setCategory(categoryService.findById(taskDto.getCategoryId()));
+        }
+
         taskRepository.save(task);
-        return task;
+
+        return toDto(task);
     }
 
     public Task update(Long id, TaskDto taskDto) {
         log.info("Change task with id {}", id);
+        log.info("Received deadline: {}", taskDto.getDeadline());
 
         Task task = Task.builder()
                 .id(id)
@@ -98,7 +172,12 @@ public class TaskService {
                 .priority(taskDto.getPriority())
                 .deadline(taskDto.getDeadline())
                 .status(taskDto.getStatus())
+                .user(userService.getCurrentUser())
                 .build();
+
+        if (taskDto.getCategoryId() != null) {
+            task.setCategory(categoryService.findById(taskDto.getCategoryId()));
+        }
 
         taskRepository.save(task);
         return task;
@@ -109,8 +188,8 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    public List<Task> findFilteredTasks(String title, Status status, Priority priority, LocalDate deadline, Category category, String sortBy, String sortDir) {
-        log.info("Find tasks by title, status, priority, deadline, category: {}, {}, {}, {}, {}", title, status, priority, deadline, category);
+    public List<TaskDto> findFilteredTasks(String title, Status status, Priority priority, LocalDate deadline, Category category, String sortBy, String sortDir) {
+//        log.info("Find tasks by title, status, priority, deadline, category: {}, {}, {}, {}, {}", title, status, priority, deadline, category);
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
 
@@ -121,7 +200,32 @@ public class TaskService {
                 .and(TaskSpecifications.hasDeadline(deadline))
                 .and(TaskSpecifications.hasCategory(category));
 
-        return taskRepository.findAll(specification, sort);
+        if ("priority".equalsIgnoreCase(sortBy)) {
+            sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy.equals("priority") ? "priorityOrder" : sortBy);
+        }
+
+        List<Task> tasks = taskRepository.findAll(specification, sort);
+
+        return tasks.stream().map(this::toDto).toList();
+    }
+
+    private TaskDto toDto(Task task) {
+        TaskDto dto = TaskDto.builder()
+                .id(task.getId())
+                .title(task.getTitle())
+                .description(task.getDescription())
+                .priority(task.getPriority())
+                .deadline(task.getDeadline())
+                .status(task.getStatus())
+                .userId(task.getUser().getId())
+                .build();
+
+        if (task.getCategory() != null) {
+            dto.setCategoryId(task.getCategory().getId());
+            dto.setCategoryTitle(task.getCategory().getTitle());
+        }
+
+        return dto;
     }
 }
 

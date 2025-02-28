@@ -26,7 +26,7 @@ public class TaskController {
 
     @GetMapping
     @Operation(summary = "Finds all tasks", description = "Finds all tasks and returns all tasks")
-    public ResponseEntity<List<Task>> findAll(
+    public ResponseEntity<List<TaskDto>> findAll(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) Priority priority,
@@ -46,31 +46,59 @@ public class TaskController {
 
     @GetMapping("/today")
     @Operation(summary = "Finds today tasks", description = "Finds today tasks and returns tasks with deadline = today")
-    public ResponseEntity<List<Task>> findTodayTasks() {
-        return ResponseEntity.ok(taskService.findTodayTasks());
+    public ResponseEntity<List<TaskDto>> findTodayTasks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Priority priority,
+            @RequestParam(required = false) Category category,
+            @RequestParam(defaultValue = "deadline") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return ResponseEntity.ok(taskService.findTodayTasks(title, status, priority, category, sortBy, sortDir));
     }
 
     @GetMapping("/tomorrow")
     @Operation(summary = "Finds tomorrow tasks", description = "Finds tomorrow tasks and returns tasks with deadline = tomorrow")
-    public ResponseEntity<List<Task>> findTomorrowTasks() {
-        return ResponseEntity.ok(taskService.findTomorrowTasks());
+    public ResponseEntity<List<TaskDto>> findTomorrowTasks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Priority priority,
+            @RequestParam(required = false) Category category,
+            @RequestParam(defaultValue = "deadline") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return ResponseEntity.ok(taskService.findTomorrowTasks(title, status, priority, category, sortBy, sortDir));
     }
 
     @GetMapping("/week")
     @Operation(summary = "Finds weekly tasks", description = "Finds weekly tasks and returns tasks with deadline = current week (starting from monday)")
-    public ResponseEntity<List<Task>> findWeekTasks() {
-        return ResponseEntity.ok(taskService.findWeekTasks());
+    public ResponseEntity<List<TaskDto>> findWeekTasks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Priority priority,
+            @RequestParam(required = false) Category category,
+            @RequestParam(defaultValue = "deadline") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return ResponseEntity.ok(taskService.findWeekTasks(title, status, priority, category, sortBy, sortDir));
     }
 
     @GetMapping("/important")
     @Operation(summary = "Finds important tasks", description = "Finds important tasks and returns tasks with priority = HIGH")
-    public ResponseEntity<List<Task>> findImportantTasks() {
-        return ResponseEntity.ok(taskService.findImportantTasks());
+    public ResponseEntity<List<TaskDto>> findImportantTasks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Priority priority,
+            @RequestParam(required = false) Category category,
+            @RequestParam(defaultValue = "deadline") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return ResponseEntity.ok(taskService.findImportantTasks(title, status, priority, category, sortBy, sortDir));
     }
 
     @PostMapping
     @Operation(summary = "Creates a task", description = "Creates a task and returns the created task")
-    public ResponseEntity<Task> create(@RequestBody TaskDto taskDto) {
+    public ResponseEntity<TaskDto> create(@RequestBody TaskDto taskDto) {
         return ResponseEntity.ok(taskService.create(taskDto));
     }
 
