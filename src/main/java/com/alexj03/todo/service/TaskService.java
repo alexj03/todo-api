@@ -7,15 +7,18 @@ import com.alexj03.todo.model.*;
 import com.alexj03.todo.repository.TaskRepository;
 import com.alexj03.todo.repository.UserRepository;
 import com.alexj03.todo.specification.TaskSpecifications;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
@@ -95,9 +98,6 @@ public class TaskService {
         LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate sunday = monday.plusDays(6);
 
-//        return taskRepository.findAllByDeadlineBetween(monday, sunday).orElseThrow(TasksNotFoundException::new);
-
-
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
 
         Specification<Task> specification = Specification.where(TaskSpecifications.hasUser(userService.getCurrentUser()))
@@ -118,8 +118,6 @@ public class TaskService {
 
     public List<TaskDto> findImportantTasks(String title, Status status, Priority priority, Category category, String sortBy, String sortDir) {
         log.info("Find important tasks");
-//        List<Task> tasks = taskRepository.findAllByUserAndPriorityEquals(userService.getCurrentUser(), Priority.HIGH).orElseThrow(TasksNotFoundException::new);
-//        return tasks.stream().map(this::toDto).toList();
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
 
@@ -138,6 +136,14 @@ public class TaskService {
         return tasks.stream().map(this::toDto).toList();
     }
 
+    @Scheduled(cron = "0 0 0 * * ?")
+    @EventListener(ContextRefreshedEvent.class)
+    @Transactional
+    public void deleteExpiredCompletedTasks() {
+        log.info("Удаление просроченных выполненных задач");
+        taskRepository.deleteByDeadlineBeforeAndStatusEquals(ZonedDateTime.now(ZoneOffset.UTC), Status.COMPLETED);
+    }
+
     public TaskDto create(TaskDto taskDto) {
         log.info("Create task with title: {}", taskDto.getTitle());
 
@@ -148,7 +154,7 @@ public class TaskService {
                 .description(taskDto.getDescription())
                 .status(taskDto.getStatus())
                 .priority(taskDto.getPriority())
-                .deadline(taskDto.getDeadline() != null ? taskDto.getDeadline().plusDays(1) : null)
+                .deadline(taskDto.getDeadline() != null ? taskDto.getDeadline() : null)
                 .user(userService.getCurrentUser())
                 .build();
 
@@ -189,8 +195,6 @@ public class TaskService {
     }
 
     public List<TaskDto> findFilteredTasks(String title, Status status, Priority priority, LocalDate deadline, Category category, String sortBy, String sortDir) {
-//        log.info("Find tasks by title, status, priority, deadline, category: {}, {}, {}, {}, {}", title, status, priority, deadline, category);
-
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
 
         Specification<Task> specification = Specification.where(TaskSpecifications.hasUser(userService.getCurrentUser()))

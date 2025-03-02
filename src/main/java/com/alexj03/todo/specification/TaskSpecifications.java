@@ -1,7 +1,6 @@
 package com.alexj03.todo.specification;
 
 import com.alexj03.todo.model.*;
-import jakarta.persistence.criteria.Expression;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
@@ -35,7 +34,7 @@ public class TaskSpecifications {
             } else {
                 query.orderBy(builder.asc(root.get("priority").get("order")));
             }
-            return builder.conjunction(); // Возвращаем не null, чтобы избежать проблем
+            return builder.conjunction();
         };
     }
 

@@ -21,10 +21,15 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public User signup(RegisterUserDto registerUserDto) {
+
+        if (userRepository.existsByEmail(registerUserDto.getEmail().toLowerCase())) {
+            throw new RuntimeException("Пользователь с данным email уже существует");
+        }
+
         User user = User.builder()
                 .firstName(registerUserDto.getFirstName())
                 .lastName(registerUserDto.getLastName())
-                .email(registerUserDto.getEmail())
+                .email(registerUserDto.getEmail().toLowerCase())
                 .username(registerUserDto.getUsername())
                 .password(passwordEncoder.encode(registerUserDto.getPassword()))
                 .build();

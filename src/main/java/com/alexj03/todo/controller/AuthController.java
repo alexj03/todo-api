@@ -7,6 +7,7 @@ import com.alexj03.todo.model.User;
 import com.alexj03.todo.service.AuthenticationService;
 import com.alexj03.todo.service.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,10 +23,13 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
-        User registeredUser = authenticationService.signup(registerUserDto);
-
-        return ResponseEntity.ok(registeredUser);
+    public ResponseEntity<Object> register(@RequestBody RegisterUserDto registerUserDto) {
+        try {
+            User registeredUser = authenticationService.signup(registerUserDto);
+            return ResponseEntity.ok(registeredUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @PostMapping("/login")
